@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { NavLink, Link, Outlet } from 'react-router-dom'
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Building2, CalendarCheck, Users, UserRound,
-  Megaphone, Calendar, Settings, Menu, X, ChevronRight, LogOut
+  Megaphone, Calendar, Settings, Menu, X, ChevronRight, LogOut, ShieldOff
 } from 'lucide-react'
 import Logo from '../../components/ui/Logo'
+import { useAdminAuth } from '../../context/AdminAuthContext'
 
 const navItems = [
   { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true },
@@ -19,6 +20,13 @@ const navItems = [
 
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { logout } = useAdminAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/', { replace: true })
+  }
 
   return (
     <div className="min-h-screen bg-bg text-text flex">
@@ -37,7 +45,7 @@ export default function AdminLayout() {
       `}>
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-border shrink-0">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/admin" className="flex items-center gap-2.5">
             <Logo size={30} />
             <span className="font-heading font-bold text-sm">
               Smash<span className="text-accent">Admin</span>
@@ -77,8 +85,8 @@ export default function AdminLayout() {
           </div>
         </nav>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-border shrink-0">
+        {/* Footer — logout */}
+        <div className="p-4 border-t border-border shrink-0 space-y-1">
           <Link
             to="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-muted hover:text-text hover:bg-card transition-all"
@@ -86,6 +94,13 @@ export default function AdminLayout() {
             <LogOut size={16} />
             Back to Website
           </Link>
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-red-400/70 hover:text-red-400 hover:bg-red-500/10 transition-all"
+          >
+            <ShieldOff size={16} />
+            Sign Out
+          </button>
         </div>
       </aside>
 
@@ -100,11 +115,18 @@ export default function AdminLayout() {
             <Menu size={20} />
           </button>
           <div className="flex-1" />
-          <div className="flex items-center gap-2 text-sm text-muted">
+          <div className="flex items-center gap-3 text-sm text-muted">
             <div className="w-7 h-7 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center text-accent font-bold text-xs">
               A
             </div>
             <span>Admin</span>
+            <button
+              onClick={handleLogout}
+              className="ml-1 text-muted hover:text-red-400 transition-colors"
+              title="Sign out"
+            >
+              <ShieldOff size={15} />
+            </button>
           </div>
         </header>
 

@@ -1,0 +1,127 @@
+# Admin Dashboard (Frontend UI)
+
+Create a **minimal, modern, premium admin dashboard** that matches the design language of the main website. Keep it clean, uncluttered, and easy to use, inspired by Linear, Notion, and modern SaaS dashboards.
+
+Use plenty of whitespace, rounded cards, simple tables, subtle animations, and intuitive navigation. Avoid unnecessary analytics, complex charts, or features that are not essential.
+
+## Sidebar Navigation
+
+* Dashboard
+* Courts
+* Bookings
+* Members
+* Coaches
+* Announcements
+* Calendar
+* Settings
+
+---
+
+## Dashboard
+
+Display simple overview cards for:
+
+* Total Courts
+* Available Courts
+* Today's Bookings
+* Pending Booking Requests
+* Active Members
+
+Include a small **Recent Activity** section showing the latest bookings and updates.
+
+---
+
+## Court Management
+
+Allow the admin to:
+
+* View all courts
+* Enable / Disable courts
+* Mark a court as Maintenance
+* Edit court information
+* View today's schedule for each court
+
+---
+
+## Booking Management
+
+Allow the admin to:
+
+* View booking requests
+* Approve bookings
+* Reject bookings
+* Cancel bookings
+* Reschedule bookings
+* Search and filter bookings
+* View booking history
+
+---
+
+## Members
+
+Simple member database displaying:
+
+* Name
+* Phone Number
+* Membership Plan
+* Expiry Date
+* Coaching Batch
+
+---
+
+## Coaches
+
+Allow the admin to:
+
+* Add / Edit coach information
+* Assign coaching batches
+* View coach schedules
+
+---
+
+## Announcements
+
+Allow the admin to:
+
+* Create announcements
+* Edit announcements
+* Delete announcements
+* Pin important announcements
+
+Announcements should automatically appear on the homepage.
+
+---
+
+## Calendar
+
+Provide a clean daily and weekly booking calendar.
+
+Allow filtering by:
+
+* Court
+* Date
+
+---
+
+## Settings
+
+Allow editing of:
+
+* Working Hours
+* Booking Time Slots
+* Academy Contact Information
+* Court Availability Rules
+
+---
+
+## Design Requirements
+
+* Match the premium style of the public website.
+* Clean card-based layout.
+* Minimal tables with rounded corners.
+* Soft hover animations.
+* Responsive for desktop, tablet, and mobile.
+* Use placeholder data only.
+* Organize components so they can easily connect to Supabase or Firebase later.
+
+The admin dashboard should feel lightweight, modern, and professional, prioritizing usability over excessive features.

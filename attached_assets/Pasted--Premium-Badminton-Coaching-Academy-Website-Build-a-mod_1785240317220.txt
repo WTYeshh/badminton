@@ -1,0 +1,403 @@
+# Premium Badminton Coaching Academy Website
+
+Build a **modern, premium, minimalist, production-ready frontend** for a **Badminton Coaching Academy** using:
+
+* React + Vite
+* Tailwind CSS
+* React Router
+* Framer Motion
+* Lucide Icons
+
+The code should be **simple, modular, reusable, well-organized, beginner-friendly, and easy to maintain.**
+
+Use clear folder names, reusable components, clean naming conventions, comments only where helpful, and prepare the structure for future backend integration (Supabase/Firebase). Do **not** over-engineer the project.
+
+---
+
+# Design Philosophy
+
+The website should feel inspired by:
+
+* Apple
+* Nike
+* Linear
+* Framer
+* Notion
+
+Focus on elegance rather than quantity.
+
+Less content.
+More whitespace.
+Clean layouts.
+Premium typography.
+Smooth animations.
+Excellent responsiveness.
+
+Avoid clutter.
+
+---
+
+# Theme
+
+Dark Premium Theme
+
+Background: #0A0A0A
+
+Surface: #111111
+
+Cards: #181818
+
+Border: #2A2A2A
+
+Text: #F5F5F5
+
+Secondary Text: #9E9E9E
+
+Accent Green: #72F27C
+
+Typography
+
+* Headings: General Sans / Satoshi
+* Body: Inter
+* Numbers: Space Grotesk
+
+---
+
+# Animations
+
+Use subtle animations only.
+
+* Blur navbar while scrolling
+* Fade-up on scroll
+* Soft hover lift
+* Image zoom
+* Counter animation
+* Smooth page transitions
+* Shuttlecock loading animation
+* Smooth section reveals
+
+Animations should feel premium, not flashy.
+
+---
+
+# Background
+
+Use a subtle low-opacity grid pattern.
+
+Between sections, use elegant badminton shuttle flight curves.
+
+Keep everything minimal.
+
+---
+
+# Branding
+
+Create a simple geometric shuttlecock logo inside a rounded square.
+
+It should work as both:
+
+* Website logo
+* Favicon
+
+---
+
+# Navigation
+
+Transparent navbar.
+
+Blur when scrolling.
+
+Menu
+
+* Home
+* Coaching
+* Courts
+* Gallery
+* Contact
+
+Primary CTA
+
+Book Court
+
+Keep the navigation minimal.
+
+---
+
+# Homepage Sections
+
+## 1. Hero
+
+Full-screen premium badminton image or looping video.
+
+Headline
+
+Play. Train. Compete.
+
+Small description mentioning 11 professional indoor courts.
+
+Buttons
+
+* Book Court
+* Join Coaching
+
+Small animated statistics
+
+* 11 Courts
+* Professional Coaches
+* Daily Coaching
+* Active Members
+
+---
+
+## 2. About + Facilities
+
+Combine these into one clean section.
+
+Short academy introduction.
+
+Very small mission statement.
+
+Display facilities using clean icons only.
+
+Examples
+
+* Indoor Courts
+* LED Lighting
+* Wooden Flooring
+* Parking
+* Changing Rooms
+* Lockers
+* Equipment Shop
+* Drinking Water
+
+Avoid long paragraphs.
+
+---
+
+## 3. Coaching Programs
+
+Simple premium cards.
+
+Programs
+
+* Kids
+* Beginners
+* Intermediate
+* Advanced
+* Weekend
+
+Each card only displays
+
+* Age Group
+* Timing
+* Coach
+* Join Button
+
+Keep cards clean.
+
+---
+
+## 4. Explore Our Courts ⭐
+
+This is the primary feature of the website.
+
+Do NOT display all 11 courts as individual cards.
+
+Instead create a premium split-screen layout.
+
+Left Side
+
+* Beautiful AI-generated indoor badminton court image
+* Smooth image transition when changing courts
+* Live badge showing available courts
+
+Right Side
+
+Court Selector
+
+Dropdown or segmented selector
+
+Court 1–11
+
+When a court is selected, instantly update
+
+* Court Number
+* Status
+* Next Available Slot
+* Today's Schedule
+* Court Details
+
+Status Colors
+
+Green = Available
+
+Gray = Booked
+
+Red = Maintenance
+
+Large
+
+Book This Court
+
+button.
+
+Clicking the button opens a modern side drawer.
+
+Booking Form
+
+* Name
+* Phone Number
+* Date
+* Time Slot
+* Players (Maximum 4)
+* Notes
+
+After submission display
+
+Booking Request Received.
+Please pay at the reception before your game.
+
+No payment gateway.
+
+No online payments.
+
+Business Rules
+
+* Prevent double booking
+* Maintenance mode
+* Enable / Disable courts
+* Admin approval
+* Optional booking cutoff before slot
+
+---
+
+## 5. Gallery + Reviews
+
+Combine both sections.
+
+Top
+
+Beautiful responsive masonry gallery.
+
+Bottom
+
+3–4 premium testimonials.
+
+No separate testimonial section.
+
+---
+
+## 6. Contact
+
+One clean section.
+
+Include
+
+* Google Map
+* Address
+* Phone
+* WhatsApp
+* Email
+* Working Hours
+* Contact Form
+
+---
+
+## 7. Footer
+
+Simple footer.
+
+Include
+
+* Navigation
+* Social Links
+* Quick Contact
+* Copyright
+
+---
+
+# Additional Pages
+
+Keep these as separate pages instead of homepage sections.
+
+* Membership
+* Tournament
+* Court Availability
+* Admin Dashboard
+
+---
+
+# Admin Dashboard
+
+Frontend UI only.
+
+Simple sidebar.
+
+* Dashboard
+* Courts
+* Bookings
+* Members
+* Coaches
+* Announcements
+
+Court Management
+
+* Enable / Disable
+* Maintenance
+* Edit Court
+
+Booking Management
+
+* Approve
+* Reject
+* Cancel
+
+Announcements should automatically appear on the homepage.
+
+Keep the admin dashboard clean and professional.
+
+---
+
+# Backend Ready
+
+Prepare placeholder models and data for
+
+* Courts
+* Bookings
+* Members
+* Coaches
+* Time Slots
+* Announcements
+
+Use mock data separated from components for easy future API integration.
+
+---
+
+# Performance
+
+* Fully Responsive
+* Mobile First
+* Lazy Loaded Images
+* Accessible
+* SEO Friendly
+* Fast Loading
+* Component Based
+* Clean Folder Structure
+
+---
+
+# Important
+
+Prioritize quality over quantity.
+
+Do not create unnecessary sections.
+
+Do not fill the website with excessive text.
+
+Use generous whitespace.
+
+Keep every section elegant, premium, and visually balanced.
+
+The final website should feel like a modern sports brand rather than a traditional coaching website.
+
+Most importantly, write clean, understandable code that any developer can easily modify in the future.

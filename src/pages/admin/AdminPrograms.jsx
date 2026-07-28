@@ -3,6 +3,7 @@ import { Plus, Edit2, Trash2, X, Check, AlertTriangle } from 'lucide-react'
 import { programs as initialPrograms } from '../../data/programs'
 import { useLocalData } from '../../hooks/useLocalData'
 import Button from '../../components/ui/Button'
+import SchedulePicker from '../../components/ui/SchedulePicker'
 
 const COLOR_OPTIONS = [
   { value: 'accent',  label: 'Green',  class: 'bg-accent' },
@@ -13,22 +14,42 @@ const COLOR_OPTIONS = [
 ]
 
 const colorMap = {
-  accent: { bg: 'bg-accent/10', text: 'text-accent', border: 'border-accent/40' },
-  blue:   { bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-400/40' },
+  accent: { bg: 'bg-accent/10',     text: 'text-accent',     border: 'border-accent/40'     },
+  blue:   { bg: 'bg-blue-500/10',   text: 'text-blue-400',   border: 'border-blue-400/40'   },
   purple: { bg: 'bg-purple-500/10', text: 'text-purple-400', border: 'border-purple-400/40' },
   orange: { bg: 'bg-orange-500/10', text: 'text-orange-400', border: 'border-orange-400/40' },
-  pink:   { bg: 'bg-pink-500/10', text: 'text-pink-400', border: 'border-pink-400/40' },
+  pink:   { bg: 'bg-pink-500/10',   text: 'text-pink-400',   border: 'border-pink-400/40'   },
 }
 
 const emptyForm = {
-  name: '', ageGroup: '', timing: '', coach: '', description: '', color: 'accent',
+  name: '', ageGroup: '', timingSlots: [], coach: '', description: '', color: 'accent',
 }
 
+/** Convert string timing ↔ slot array */
+const timingToSlots  = (t) => t ? t.split(' / ').filter(Boolean) : []
+const slotsToTiming  = (arr) => arr.join(' / ')
+
 function ProgramForm({ initial = emptyForm, onSave, onCancel }) {
-  const [form, setForm] = useState(initial)
+  const [form, setForm] = useState(() => ({
+    ...emptyForm,
+    ...initial,
+    timingSlots: timingToSlots(initial.timing || ''),
+  }))
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
   const valid = form.name.trim() && form.ageGroup.trim()
+
+  const handleSave = () => {
+    if (!valid) return
+    onSave({
+      name:        form.name,
+      ageGroup:    form.ageGroup,
+      timing:      slotsToTiming(form.timingSlots),
+      coach:       form.coach,
+      description: form.description,
+      color:       form.color,
+    })
+  }
 
   return (
     <div className="bg-surface border border-border rounded-2xl p-6 space-y-4">
@@ -52,15 +73,6 @@ function ProgramForm({ initial = emptyForm, onSave, onCancel }) {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-xs text-muted uppercase tracking-wider">Timing</label>
-          <input
-            value={form.timing}
-            onChange={e => set('timing', e.target.value)}
-            placeholder="e.g. Mon–Fri: 7:00–8:30 AM"
-            className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-accent/60"
-          />
-        </div>
-        <div className="space-y-1">
           <label className="text-xs text-muted uppercase tracking-wider">Coach</label>
           <input
             value={form.coach}
@@ -69,26 +81,39 @@ function ProgramForm({ initial = emptyForm, onSave, onCancel }) {
             className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-accent/60"
           />
         </div>
+        <div className="space-y-1">
+          <label className="text-xs text-muted uppercase tracking-wider">Description</label>
+          <input
+            value={form.description}
+            onChange={e => set('description', e.target.value)}
+            placeholder="Short description…"
+            className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-accent/60"
+          />
+        </div>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-xs text-muted uppercase tracking-wider">Description</label>
-        <textarea
-          value={form.description}
-          onChange={e => set('description', e.target.value)}
-          rows={2}
-          placeholder="Short description of this batch…"
-          className="w-full bg-card border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-accent/60 resize-none"
+      {/* Timing — visual picker */}
+      <div>
+        <SchedulePicker
+          label="Timing slots"
+          value={form.timingSlots}
+          onChange={v => set('timingSlots', v)}
         />
+        {form.timingSlots.length > 1 && (
+          <p className="text-xs text-muted mt-1">
+            Preview: <span className="text-text font-mono">{slotsToTiming(form.timingSlots)}</span>
+          </p>
+        )}
       </div>
 
-      {/* Color picker */}
+      {/* Colour picker */}
       <div className="space-y-2">
         <label className="text-xs text-muted uppercase tracking-wider">Card Accent Colour</label>
         <div className="flex gap-3">
           {COLOR_OPTIONS.map(opt => (
             <button
               key={opt.value}
+              type="button"
               onClick={() => set('color', opt.value)}
               className={`w-8 h-8 rounded-full ${opt.class} ring-offset-2 ring-offset-surface transition-all ${
                 form.color === opt.value ? 'ring-2 ring-white scale-110' : 'opacity-60 hover:opacity-100'
@@ -100,7 +125,7 @@ function ProgramForm({ initial = emptyForm, onSave, onCancel }) {
       </div>
 
       <div className="flex gap-2 pt-1">
-        <Button size="sm" variant="primary" onClick={() => valid && onSave(form)} disabled={!valid}>
+        <Button size="sm" variant="primary" onClick={handleSave} disabled={!valid}>
           <Check size={13} /> Save
         </Button>
         <Button size="sm" variant="ghost" onClick={onCancel}>
@@ -114,15 +139,11 @@ function ProgramForm({ initial = emptyForm, onSave, onCancel }) {
 export default function AdminPrograms() {
   const [programs, setPrograms] = useLocalData('smash_programs', initialPrograms)
   const [adding, setAdding] = useState(false)
-  const [editing, setEditing] = useState(null) // program id
-  const [deleteConfirm, setDeleteConfirm] = useState(null) // program id
+  const [editing, setEditing] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
 
   const handleAdd = (form) => {
-    const newProgram = {
-      ...form,
-      id: 'P' + Date.now(),
-    }
-    setPrograms(prev => [...prev, newProgram])
+    setPrograms(prev => [...prev, { ...form, id: 'P' + Date.now() }])
     setAdding(false)
   }
 
@@ -138,7 +159,6 @@ export default function AdminPrograms() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold">Batch Programs</h1>
@@ -151,7 +171,6 @@ export default function AdminPrograms() {
         )}
       </div>
 
-      {/* Add form */}
       {adding && (
         <ProgramForm
           onSave={handleAdd}
@@ -159,7 +178,6 @@ export default function AdminPrograms() {
         />
       )}
 
-      {/* Program cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {programs.map(p => {
           const c = colorMap[p.color] ?? colorMap.accent
@@ -175,7 +193,6 @@ export default function AdminPrograms() {
                 </div>
               ) : (
                 <>
-                  {/* Card top */}
                   <div className={`${c.bg} px-5 py-3 flex items-center justify-between`}>
                     <span className={`text-xs font-bold uppercase tracking-widest ${c.text}`}>{p.name}</span>
                     <div className="flex gap-1">
@@ -196,7 +213,6 @@ export default function AdminPrograms() {
                     </div>
                   </div>
 
-                  {/* Card body */}
                   <div className="p-5 space-y-3">
                     <div>
                       <p className="font-heading text-lg font-bold">{p.ageGroup}</p>
@@ -208,7 +224,6 @@ export default function AdminPrograms() {
                     </div>
                   </div>
 
-                  {/* Delete confirm */}
                   {deleteConfirm === p.id && (
                     <div className="px-5 pb-5">
                       <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">

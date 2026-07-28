@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Search, Check, X, Ban, CalendarRange } from 'lucide-react'
 import { bookings as initialBookings } from '../../data/bookings'
+import { useLocalData } from '../../hooks/useLocalData'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
+import { toDisplay } from '../../utils/date'
 
 export default function AdminBookings() {
-  const [bookingList, setBookingList] = useState(initialBookings)
+  const [bookingList, setBookingList] = useLocalData('smash_bookings', initialBookings)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('all')
 
@@ -82,7 +84,7 @@ export default function AdminBookings() {
                   <td className="px-5 py-3.5 text-muted">{b.court}</td>
                   <td className="px-5 py-3.5 text-muted">
                     <div>
-                      <p>{b.date}</p>
+                      <p className="font-mono-nums">{toDisplay(b.date)}</p>
                       <p className="text-xs">{b.slot}</p>
                     </div>
                   </td>

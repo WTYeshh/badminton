@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Search } from 'lucide-react'
 import { members } from '../../data/members'
-import Badge from '../../components/ui/Badge'
+import { toDisplay } from '../../utils/date'
 
 export default function AdminMembers() {
   const [search, setSearch] = useState('')
@@ -12,7 +12,6 @@ export default function AdminMembers() {
     m.plan.toLowerCase().includes(search.toLowerCase())
   )
 
-  // Check if expiry is within 30 days
   const isExpiringSoon = (dateStr) => {
     const diff = (new Date(dateStr) - new Date()) / (1000 * 60 * 60 * 24)
     return diff >= 0 && diff <= 30
@@ -55,14 +54,18 @@ export default function AdminMembers() {
                   <td className="px-5 py-3.5 text-muted font-mono-nums text-xs">{m.phone}</td>
                   <td className="px-5 py-3.5">
                     <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
-                      m.plan === 'Annual' ? 'bg-accent/10 text-accent border-accent/20' :
+                      m.plan === 'Annual'  ? 'bg-accent/10 text-accent border-accent/20' :
                       m.plan === 'Premium' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
                       'bg-zinc-500/10 text-zinc-400 border-zinc-500/20'
                     }`}>{m.plan}</span>
                   </td>
                   <td className="px-5 py-3.5 font-mono-nums text-sm">
-                    <span className={isExpiringSoon(m.expiry) ? 'text-yellow-400' : 'text-text'}>{m.expiry}</span>
-                    {isExpiringSoon(m.expiry) && <span className="ml-2 text-xs text-yellow-400">⚠ Expiring soon</span>}
+                    <span className={isExpiringSoon(m.expiry) ? 'text-yellow-400' : 'text-text'}>
+                      {toDisplay(m.expiry)}
+                    </span>
+                    {isExpiringSoon(m.expiry) && (
+                      <span className="ml-2 text-xs text-yellow-400">⚠ Expiring soon</span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 text-muted text-xs">{m.batch}</td>
                 </tr>

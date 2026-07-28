@@ -1,25 +1,34 @@
 import { useState } from 'react'
-import { Wrench, Eye, EyeOff, Edit2, Check, X } from 'lucide-react'
+import { Wrench, Edit2, Check, X, ToggleLeft, ToggleRight } from 'lucide-react'
+import { courts as initialCourts } from '../../data/courts'
+import { useLocalData } from '../../hooks/useLocalData'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 
-export default function AdminCourts() {
-  const [courtList, setCourtList] = useState(() =>
-    Array.from({ length: 11 }, (_, i) => ({
-      id: i + 1,
-      name: `Court ${i + 1}`,
-      status: i === 3 ? 'maintenance' : i % 3 === 1 ? 'booked' : 'available',
-      floor: i % 2 === 0 ? 'Wooden' : 'Synthetic',
-      lighting: 'LED',
-      enabled: i !== 3,
-    }))
+function Switch({ on, onChange, title }) {
+  return (
+    <button
+      onClick={onChange}
+      title={title}
+      className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${on ? 'text-accent' : 'text-muted'}`}
+    >
+      {on
+        ? <ToggleRight size={22} className="text-accent" />
+        : <ToggleLeft  size={22} className="text-zinc-500" />
+      }
+      <span className="w-6">{on ? 'On' : 'Off'}</span>
+    </button>
   )
+}
+
+export default function AdminCourts() {
+  const [courtList, setCourtList] = useLocalData('smash_courts', initialCourts)
   const [editing, setEditing] = useState(null)
   const [editForm, setEditForm] = useState({})
 
-  const toggle = (id) => {
+  const toggleEnabled = (id) => {
     setCourtList(prev => prev.map(c =>
-      c.id === id ? { ...c, enabled: !c.enabled, status: c.enabled ? 'maintenance' : 'available' } : c
+      c.id === id ? { ...c, enabled: !c.enabled, status: !c.enabled ? 'available' : c.status } : c
     ))
   }
 
@@ -43,15 +52,17 @@ export default function AdminCourts() {
     <div className="space-y-6 max-w-5xl">
       <div>
         <h1 className="font-heading text-2xl font-bold">Court Management</h1>
-        <p className="text-muted text-sm mt-1">Enable, disable, and manage all 11 courts.</p>
+        <p className="text-muted text-sm mt-1">
+          Enable/disable courts. <span className="text-accent font-medium">On = visible on booking page.</span> Off = hidden from public.
+        </p>
       </div>
 
       <div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm min-w-[640px]">
+          <table className="w-full text-sm min-w-[700px]">
             <thead>
               <tr className="border-b border-border bg-surface">
-                {['Court', 'Status', 'Floor', 'Lighting', 'Actions'].map(h => (
+                {['Court', 'Booking Visibility', 'Status', 'Floor', 'Actions'].map(h => (
                   <th key={h} className="text-left px-5 py-3 text-muted font-medium text-xs uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
@@ -59,6 +70,7 @@ export default function AdminCourts() {
             <tbody>
               {courtList.map((court, i) => (
                 <tr key={court.id} className={`border-b border-border last:border-0 hover:bg-surface/50 transition-colors ${i % 2 === 1 ? 'bg-surface/20' : ''}`}>
+                  {/* Court name */}
                   <td className="px-5 py-4">
                     {editing === court.id ? (
                       <input
@@ -70,7 +82,25 @@ export default function AdminCourts() {
                       <span className="font-medium">{court.name}</span>
                     )}
                   </td>
-                  <td className="px-5 py-4"><Badge status={court.enabled ? court.status : 'booked'} label={court.enabled ? undefined : 'Disabled'} /></td>
+
+                  {/* Visibility toggle */}
+                  <td className="px-5 py-4">
+                    <Switch
+                      on={court.enabled}
+                      onChange={() => toggleEnabled(court.id)}
+                      title={court.enabled ? 'Click to hide from booking page' : 'Click to show on booking page'}
+                    />
+                  </td>
+
+                  {/* Status badge */}
+                  <td className="px-5 py-4">
+                    <Badge
+                      status={!court.enabled ? 'maintenance' : court.status}
+                      label={!court.enabled ? 'Hidden' : undefined}
+                    />
+                  </td>
+
+                  {/* Floor */}
                   <td className="px-5 py-4 text-muted">
                     {editing === court.id ? (
                       <select
@@ -83,7 +113,8 @@ export default function AdminCourts() {
                       </select>
                     ) : court.floor}
                   </td>
-                  <td className="px-5 py-4 text-muted">{court.lighting}</td>
+
+                  {/* Actions */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-2">
                       {editing === court.id ? (
@@ -97,16 +128,14 @@ export default function AdminCourts() {
                         </>
                       ) : (
                         <>
-                          <Button size="sm" variant="ghost" onClick={() => startEdit(court)}>
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(court)} title="Edit court">
                             <Edit2 size={13} />
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => toggle(court.id)}>
-                            {court.enabled ? <EyeOff size={13} /> : <Eye size={13} />}
                           </Button>
                           <Button
                             size="sm"
                             variant={court.status === 'maintenance' ? 'secondary' : 'ghost'}
                             onClick={() => setMaintenance(court.id)}
+                            title="Toggle maintenance"
                           >
                             <Wrench size={13} />
                           </Button>

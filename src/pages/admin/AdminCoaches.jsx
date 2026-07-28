@@ -3,20 +3,21 @@ import { Plus, Edit2, Trash2, X, Check, AlertTriangle, Phone } from 'lucide-reac
 import { coaches as initialCoaches } from '../../data/coaches'
 import { useLocalData } from '../../hooks/useLocalData'
 import Button from '../../components/ui/Button'
+import SchedulePicker from '../../components/ui/SchedulePicker'
 
 const coachColors = ['text-accent', 'text-blue-400', 'text-purple-400', 'text-orange-400']
 
 const emptyForm = {
   name: '', specialization: '', experience: '', phone: '',
-  batches: '', schedule: '',
+  batches: '', schedule: [],
 }
 
 function CoachForm({ initial, onSave, onCancel }) {
   const initForm = initial
     ? {
         ...initial,
-        batches: initial.batches.join(', '),
-        schedule: initial.schedule.join(', '),
+        batches:  Array.isArray(initial.batches)  ? initial.batches.join(', ')  : (initial.batches  || ''),
+        schedule: Array.isArray(initial.schedule) ? initial.schedule : [],
       }
     : emptyForm
 
@@ -29,13 +30,13 @@ function CoachForm({ initial, onSave, onCancel }) {
     if (!valid) return
     onSave({
       ...form,
-      batches:  form.batches.split(',').map(s => s.trim()).filter(Boolean),
-      schedule: form.schedule.split(',').map(s => s.trim()).filter(Boolean),
+      batches: form.batches.split(',').map(s => s.trim()).filter(Boolean),
+      // schedule is already an array via SchedulePicker
     })
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="grid sm:grid-cols-2 gap-3">
         <div className="space-y-1">
           <label className="text-xs text-muted uppercase tracking-wider">Full Name *</label>
@@ -87,15 +88,12 @@ function CoachForm({ initial, onSave, onCancel }) {
         />
       </div>
 
-      <div className="space-y-1">
-        <label className="text-xs text-muted uppercase tracking-wider">
-          Schedule <span className="normal-case">(comma-separated)</span>
-        </label>
-        <input
+      {/* Schedule — visual picker */}
+      <div>
+        <SchedulePicker
+          label="Schedule"
           value={form.schedule}
-          onChange={e => set('schedule', e.target.value)}
-          placeholder="e.g. Mon–Fri: 6:00–8:00 AM, Mon–Fri: 6:00–8:00 PM"
-          className="w-full bg-surface border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-accent/60"
+          onChange={v => set('schedule', v)}
         />
       </div>
 
@@ -114,8 +112,8 @@ function CoachForm({ initial, onSave, onCancel }) {
 export default function AdminCoaches() {
   const [coaches, setCoaches] = useLocalData('smash_coaches', initialCoaches)
   const [adding, setAdding] = useState(false)
-  const [editing, setEditing] = useState(null)        // coach id
-  const [deleteConfirm, setDeleteConfirm] = useState(null)  // coach id
+  const [editing, setEditing] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
 
   const handleAdd = (form) => {
     setCoaches(prev => [...prev, { ...form, id: 'C' + Date.now() }])
@@ -185,7 +183,6 @@ export default function AdminCoaches() {
                     </div>
                   </div>
 
-                  {/* Action buttons */}
                   <div className="flex gap-1 shrink-0">
                     <button
                       onClick={() => { setEditing(coach.id); setAdding(false) }}
@@ -243,7 +240,6 @@ export default function AdminCoaches() {
                   )}
                 </div>
 
-                {/* Delete confirm inline */}
                 {deleteConfirm === coach.id && (
                   <div className="mt-4 bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
                     <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />

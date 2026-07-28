@@ -4,6 +4,7 @@ import { Calendar, Users, Phone, Edit2, Trash2, Plus, X, Check, AlertTriangle } 
 import PageLayout from '../components/layout/PageLayout'
 import SectionLabel from '../components/ui/SectionLabel'
 import Button from '../components/ui/Button'
+import SchedulePicker from '../components/ui/SchedulePicker'
 import { FadeUp, AnimatedTitle, ScaleIn } from '../components/ui/ScrollReveal'
 import { programs as initialPrograms } from '../data/programs'
 import { coaches as initialCoaches } from '../data/coaches'
@@ -19,7 +20,7 @@ const colorMap = {
 }
 
 const COLOR_OPTIONS = [
-  { value: 'accent', label: 'Green', cls: 'bg-accent' },
+  { value: 'accent', label: 'Green',  cls: 'bg-accent' },
   { value: 'blue',   label: 'Blue',   cls: 'bg-blue-400' },
   { value: 'purple', label: 'Purple', cls: 'bg-purple-400' },
   { value: 'orange', label: 'Orange', cls: 'bg-orange-400' },
@@ -28,12 +29,19 @@ const COLOR_OPTIONS = [
 
 const coachColors = ['text-accent', 'text-blue-400', 'text-purple-400', 'text-orange-400']
 
-const emptyProgram = { name: '', ageGroup: '', timing: '', coach: '', description: '', color: 'accent' }
-const emptyCoach   = { name: '', specialization: '', experience: '', phone: '', batches: '', schedule: '' }
+const timingToSlots = (t) => t ? t.split(' / ').filter(Boolean) : []
+const slotsToTiming = (arr) => arr.join(' / ')
 
 /* ─── Inline Program Edit Form ─── */
-function ProgramEditForm({ initial = emptyProgram, onSave, onCancel }) {
-  const [form, setForm] = useState(initial)
+function ProgramEditForm({ initial, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name:        initial?.name        || '',
+    ageGroup:    initial?.ageGroup    || '',
+    timingSlots: timingToSlots(initial?.timing || ''),
+    coach:       initial?.coach       || '',
+    description: initial?.description || '',
+    color:       initial?.color       || 'accent',
+  })
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
   const valid = form.name.trim() && form.ageGroup.trim()
 
@@ -41,10 +49,10 @@ function ProgramEditForm({ initial = emptyProgram, onSave, onCancel }) {
     <div className="space-y-3 p-1">
       <div className="grid grid-cols-1 gap-2">
         {[
-          { key: 'name', label: 'Batch Name *', ph: 'e.g. Kids' },
-          { key: 'ageGroup', label: 'Age Group *', ph: 'e.g. 6–12 years' },
-          { key: 'timing', label: 'Timing', ph: 'e.g. Sat & Sun: 8:00–10:00 AM' },
-          { key: 'coach', label: 'Coach', ph: 'e.g. Coach Arun Thomas' },
+          { key: 'name',        label: 'Batch Name *', ph: 'e.g. Kids' },
+          { key: 'ageGroup',    label: 'Age Group *',  ph: 'e.g. 6–12 years' },
+          { key: 'coach',       label: 'Coach',        ph: 'e.g. Coach Arun Thomas' },
+          { key: 'description', label: 'Description',  ph: 'Short description…' },
         ].map(({ key, label, ph }) => (
           <div key={key} className="space-y-0.5">
             <label className="text-xs text-muted uppercase tracking-wider">{label}</label>
@@ -56,44 +64,37 @@ function ProgramEditForm({ initial = emptyProgram, onSave, onCancel }) {
             />
           </div>
         ))}
-        <div className="space-y-0.5">
-          <label className="text-xs text-muted uppercase tracking-wider">Description</label>
-          <textarea
-            value={form.description}
-            onChange={e => set('description', e.target.value)}
-            rows={2}
-            placeholder="Short description…"
-            className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60 resize-none"
-          />
-        </div>
+
+        {/* Timing picker */}
+        <SchedulePicker
+          label="Timing"
+          value={form.timingSlots}
+          onChange={v => set('timingSlots', v)}
+        />
+
+        {/* Colour */}
         <div className="space-y-1">
           <label className="text-xs text-muted uppercase tracking-wider">Accent Colour</label>
           <div className="flex gap-2">
             {COLOR_OPTIONS.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => set('color', opt.value)}
+              <button key={opt.value} type="button" onClick={() => set('color', opt.value)}
                 className={`w-6 h-6 rounded-full ${opt.cls} ring-offset-2 ring-offset-card transition-all ${
                   form.color === opt.value ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-100'
-                }`}
-                title={opt.label}
-              />
+                }`} title={opt.label} />
             ))}
           </div>
         </div>
       </div>
+
       <div className="flex gap-2 pt-1">
         <button
-          onClick={() => valid && onSave(form)}
+          onClick={() => valid && onSave({ ...form, timing: slotsToTiming(form.timingSlots) })}
           disabled={!valid}
           className="flex items-center gap-1 text-xs bg-accent/20 hover:bg-accent/30 border border-accent/40 text-accent px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
         >
           <Check size={11} /> Save
         </button>
-        <button
-          onClick={onCancel}
-          className="flex items-center gap-1 text-xs text-muted hover:text-text px-2 py-1.5 rounded-lg transition-colors"
-        >
+        <button onClick={onCancel} className="flex items-center gap-1 text-xs text-muted hover:text-text px-2 py-1.5 rounded-lg transition-colors">
           <X size={11} /> Cancel
         </button>
       </div>
@@ -102,12 +103,15 @@ function ProgramEditForm({ initial = emptyProgram, onSave, onCancel }) {
 }
 
 /* ─── Inline Coach Edit Form ─── */
-function CoachEditForm({ initial = emptyCoach, onSave, onCancel }) {
-  const initForm = initial
-    ? { ...initial, batches: Array.isArray(initial.batches) ? initial.batches.join(', ') : (initial.batches || ''), schedule: Array.isArray(initial.schedule) ? initial.schedule.join(', ') : (initial.schedule || '') }
-    : emptyCoach
-
-  const [form, setForm] = useState(initForm)
+function CoachEditForm({ initial, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    name:           initial?.name           || '',
+    specialization: initial?.specialization || '',
+    experience:     initial?.experience     || '',
+    phone:          initial?.phone          || '',
+    batches:        Array.isArray(initial?.batches) ? initial.batches.join(', ') : (initial?.batches || ''),
+    schedule:       Array.isArray(initial?.schedule) ? initial.schedule : [],
+  })
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
   const valid = form.name.trim() && form.specialization.trim()
 
@@ -115,62 +119,52 @@ function CoachEditForm({ initial = emptyCoach, onSave, onCancel }) {
     if (!valid) return
     onSave({
       ...form,
-      batches:  form.batches.split(',').map(s => s.trim()).filter(Boolean),
-      schedule: form.schedule.split(',').map(s => s.trim()).filter(Boolean),
+      batches: form.batches.split(',').map(s => s.trim()).filter(Boolean),
     })
   }
 
   return (
     <div className="space-y-3 p-1">
       {[
-        { key: 'name', label: 'Full Name *', ph: 'e.g. Coach Rajesh Kumar' },
+        { key: 'name',           label: 'Full Name *',      ph: 'e.g. Coach Rajesh Kumar' },
         { key: 'specialization', label: 'Specialization *', ph: 'e.g. Advanced & Competitive' },
-        { key: 'experience', label: 'Experience', ph: 'e.g. 8 years' },
-        { key: 'phone', label: 'Phone (10 digits)', ph: '9876543001' },
+        { key: 'experience',     label: 'Experience',       ph: 'e.g. 8 years' },
       ].map(({ key, label, ph }) => (
         <div key={key} className="space-y-0.5">
           <label className="text-xs text-muted uppercase tracking-wider">{label}</label>
-          <input
-            value={form[key]}
-            onChange={e => {
-              const val = key === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value
-              set(key, val)
-            }}
-            placeholder={ph}
-            className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60"
-          />
+          <input value={form[key]} onChange={e => set(key, e.target.value)} placeholder={ph}
+            className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60" />
         </div>
       ))}
+
+      <div className="space-y-0.5">
+        <label className="text-xs text-muted uppercase tracking-wider">Phone</label>
+        <input value={form.phone}
+          onChange={e => set('phone', e.target.value.replace(/\D/g, '').slice(0, 10))}
+          placeholder="9876543001"
+          className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60" />
+      </div>
+
       <div className="space-y-0.5">
         <label className="text-xs text-muted uppercase tracking-wider">Batches <span className="normal-case">(comma-separated)</span></label>
-        <input
-          value={form.batches}
-          onChange={e => set('batches', e.target.value)}
+        <input value={form.batches} onChange={e => set('batches', e.target.value)}
           placeholder="e.g. Advanced Morning, Advanced Evening"
-          className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60"
-        />
+          className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60" />
       </div>
-      <div className="space-y-0.5">
-        <label className="text-xs text-muted uppercase tracking-wider">Schedule <span className="normal-case">(comma-separated)</span></label>
-        <input
-          value={form.schedule}
-          onChange={e => set('schedule', e.target.value)}
-          placeholder="e.g. Mon–Fri: 6:00–8:00 AM, Mon–Fri: 6:00–8:00 PM"
-          className="w-full bg-surface border border-border rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:border-accent/60"
-        />
-      </div>
+
+      {/* Schedule picker */}
+      <SchedulePicker
+        label="Schedule"
+        value={form.schedule}
+        onChange={v => set('schedule', v)}
+      />
+
       <div className="flex gap-2 pt-1">
-        <button
-          onClick={handleSave}
-          disabled={!valid}
-          className="flex items-center gap-1 text-xs bg-accent/20 hover:bg-accent/30 border border-accent/40 text-accent px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40"
-        >
+        <button onClick={handleSave} disabled={!valid}
+          className="flex items-center gap-1 text-xs bg-accent/20 hover:bg-accent/30 border border-accent/40 text-accent px-3 py-1.5 rounded-lg transition-colors disabled:opacity-40">
           <Check size={11} /> Save
         </button>
-        <button
-          onClick={onCancel}
-          className="flex items-center gap-1 text-xs text-muted hover:text-text px-2 py-1.5 rounded-lg transition-colors"
-        >
+        <button onClick={onCancel} className="flex items-center gap-1 text-xs text-muted hover:text-text px-2 py-1.5 rounded-lg transition-colors">
           <X size={11} /> Cancel
         </button>
       </div>
@@ -180,60 +174,36 @@ function CoachEditForm({ initial = emptyCoach, onSave, onCancel }) {
 
 /* ─── Main Coaching Page ─── */
 export default function Coaching() {
-  const location   = useLocation()
-  const teamRef    = useRef(null)
+  const location = useLocation()
+  const teamRef  = useRef(null)
   const { isAuthenticated } = useAdminAuth()
 
   const [programs, setPrograms] = useLocalData('smash_programs', initialPrograms)
   const [coaches,  setCoaches]  = useLocalData('smash_coaches',  initialCoaches)
 
-  // Program edit state
-  const [editingProgram, setEditingProgram] = useState(null)   // program id
-  const [deletingProgram, setDeletingProgram] = useState(null) // program id
-  const [addingProgram, setAddingProgram] = useState(false)
+  const [editingProgram,  setEditingProgram]  = useState(null)
+  const [deletingProgram, setDeletingProgram] = useState(null)
+  const [addingProgram,   setAddingProgram]   = useState(false)
 
-  // Coach edit state
-  const [editingCoach, setEditingCoach] = useState(null)   // coach id
-  const [deletingCoach, setDeletingCoach] = useState(null) // coach id
-  const [addingCoach, setAddingCoach] = useState(false)
+  const [editingCoach,  setEditingCoach]  = useState(null)
+  const [deletingCoach, setDeletingCoach] = useState(null)
+  const [addingCoach,   setAddingCoach]   = useState(false)
 
   useEffect(() => {
     if (location.hash === '#meet-the-team' && teamRef.current) {
-      setTimeout(() => {
-        teamRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 300)
+      setTimeout(() => teamRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300)
     }
   }, [location.hash])
 
   const scrollToTeam = () => teamRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 
-  // Program handlers
-  const handleAddProgram = (form) => {
-    setPrograms(prev => [...prev, { ...form, id: 'P' + Date.now() }])
-    setAddingProgram(false)
-  }
-  const handleEditProgram = (form) => {
-    setPrograms(prev => prev.map(p => p.id === editingProgram ? { ...p, ...form } : p))
-    setEditingProgram(null)
-  }
-  const handleDeleteProgram = (id) => {
-    setPrograms(prev => prev.filter(p => p.id !== id))
-    setDeletingProgram(null)
-  }
+  const handleAddProgram  = (form) => { setPrograms(prev => [...prev, { ...form, id: 'P' + Date.now() }]); setAddingProgram(false) }
+  const handleEditProgram = (form) => { setPrograms(prev => prev.map(p => p.id === editingProgram ? { ...p, ...form } : p)); setEditingProgram(null) }
+  const handleDeleteProgram = (id) => { setPrograms(prev => prev.filter(p => p.id !== id)); setDeletingProgram(null) }
 
-  // Coach handlers
-  const handleAddCoach = (form) => {
-    setCoaches(prev => [...prev, { ...form, id: 'C' + Date.now() }])
-    setAddingCoach(false)
-  }
-  const handleEditCoach = (form) => {
-    setCoaches(prev => prev.map(c => c.id === editingCoach ? { ...c, ...form } : c))
-    setEditingCoach(null)
-  }
-  const handleDeleteCoach = (id) => {
-    setCoaches(prev => prev.filter(c => c.id !== id))
-    setDeletingCoach(null)
-  }
+  const handleAddCoach   = (form) => { setCoaches(prev => [...prev, { ...form, id: 'C' + Date.now() }]); setAddingCoach(false) }
+  const handleEditCoach  = (form) => { setCoaches(prev => prev.map(c => c.id === editingCoach ? { ...c, ...form } : c)); setEditingCoach(null) }
+  const handleDeleteCoach = (id) => { setCoaches(prev => prev.filter(c => c.id !== id)); setDeletingCoach(null) }
 
   return (
     <PageLayout>
@@ -252,29 +222,22 @@ export default function Coaching() {
 
         {/* ── Programs ── */}
         <div className="mb-24 sm:mb-28">
-          {/* Admin: header row with Add button */}
           {isAuthenticated && (
             <div className="flex items-center justify-between mb-4 px-1">
               <span className="text-xs text-accent font-semibold uppercase tracking-widest">Admin — Batch Cards</span>
               {!addingProgram && (
-                <button
-                  onClick={() => { setAddingProgram(true); setEditingProgram(null) }}
-                  className="flex items-center gap-1.5 text-xs bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent px-3 py-1.5 rounded-lg transition-colors"
-                >
+                <button onClick={() => { setAddingProgram(true); setEditingProgram(null) }}
+                  className="flex items-center gap-1.5 text-xs bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent px-3 py-1.5 rounded-lg transition-colors">
                   <Plus size={12} /> Add Batch
                 </button>
               )}
             </div>
           )}
 
-          {/* Add Program Form */}
           {isAuthenticated && addingProgram && (
             <div className="bg-card border border-accent/30 rounded-2xl p-5 mb-5">
               <p className="text-xs font-semibold text-accent mb-3 uppercase tracking-wider">New Batch</p>
-              <ProgramEditForm
-                onSave={handleAddProgram}
-                onCancel={() => setAddingProgram(false)}
-              />
+              <ProgramEditForm onSave={handleAddProgram} onCancel={() => setAddingProgram(false)} />
             </div>
           )}
 
@@ -288,18 +251,12 @@ export default function Coaching() {
                       <div className={`${c.bg} px-4 py-2 flex items-center justify-between`}>
                         <span className={`text-xs font-bold uppercase tracking-widest ${c.text}`}>{p.name}</span>
                         <div className="flex gap-1">
-                          <button
-                            onClick={() => { setEditingProgram(p.id); setAddingProgram(false); setDeletingProgram(null) }}
-                            className="p-1 rounded-lg hover:bg-white/10 text-muted hover:text-text transition-colors"
-                            title="Edit batch"
-                          >
+                          <button onClick={() => { setEditingProgram(p.id); setAddingProgram(false); setDeletingProgram(null) }}
+                            className="p-1 rounded-lg hover:bg-white/10 text-muted hover:text-text transition-colors" title="Edit batch">
                             <Edit2 size={12} />
                           </button>
-                          <button
-                            onClick={() => setDeletingProgram(p.id)}
-                            className="p-1 rounded-lg hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors"
-                            title="Delete batch"
-                          >
+                          <button onClick={() => setDeletingProgram(p.id)}
+                            className="p-1 rounded-lg hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors" title="Delete batch">
                             <Trash2 size={12} />
                           </button>
                         </div>
@@ -308,11 +265,7 @@ export default function Coaching() {
 
                     {editingProgram === p.id ? (
                       <div className="p-4 flex-1">
-                        <ProgramEditForm
-                          initial={p}
-                          onSave={handleEditProgram}
-                          onCancel={() => setEditingProgram(null)}
-                        />
+                        <ProgramEditForm initial={p} onSave={handleEditProgram} onCancel={() => setEditingProgram(null)} />
                       </div>
                     ) : (
                       <div className="p-6 h-full flex flex-col gap-5 flex-1">
@@ -322,9 +275,7 @@ export default function Coaching() {
                           </div>
                         )}
                         <div>
-                          {!isAuthenticated && (
-                            <span className={`text-xs font-bold uppercase tracking-widest ${c.text}`}>{p.name}</span>
-                          )}
+                          {!isAuthenticated && <span className={`text-xs font-bold uppercase tracking-widest ${c.text}`}>{p.name}</span>}
                           <h3 className="font-heading text-xl font-bold mt-1">{p.ageGroup}</h3>
                           <p className="text-sm text-muted mt-2 leading-relaxed">{p.description}</p>
                         </div>
@@ -350,25 +301,18 @@ export default function Coaching() {
                       </div>
                     )}
 
-                    {/* Delete confirm */}
                     {deletingProgram === p.id && (
                       <div className="px-4 pb-4">
                         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
                           <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
                           <div className="flex-1">
                             <p className="text-xs text-red-300 font-medium">Delete "{p.name}" batch?</p>
-                            <p className="text-xs text-muted mt-0.5">Removes it from the public page.</p>
                             <div className="flex gap-2 mt-2">
-                              <button
-                                onClick={() => handleDeleteProgram(p.id)}
-                                className="text-xs bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 px-3 py-1 rounded-lg transition-colors"
-                              >
+                              <button onClick={() => handleDeleteProgram(p.id)}
+                                className="text-xs bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 px-3 py-1 rounded-lg transition-colors">
                                 Yes, delete
                               </button>
-                              <button
-                                onClick={() => setDeletingProgram(null)}
-                                className="text-xs text-muted hover:text-text px-2 py-1 rounded-lg transition-colors"
-                              >
+                              <button onClick={() => setDeletingProgram(null)} className="text-xs text-muted hover:text-text px-2 py-1 rounded-lg transition-colors">
                                 Cancel
                               </button>
                             </div>
@@ -395,29 +339,22 @@ export default function Coaching() {
             </p>
           </FadeUp>
 
-          {/* Admin: Add Coach button */}
           {isAuthenticated && (
             <div className="flex items-center justify-between mb-5 px-1">
               <span className="text-xs text-accent font-semibold uppercase tracking-widest">Admin — Coaches</span>
               {!addingCoach && (
-                <button
-                  onClick={() => { setAddingCoach(true); setEditingCoach(null) }}
-                  className="flex items-center gap-1.5 text-xs bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent px-3 py-1.5 rounded-lg transition-colors"
-                >
+                <button onClick={() => { setAddingCoach(true); setEditingCoach(null) }}
+                  className="flex items-center gap-1.5 text-xs bg-accent/10 hover:bg-accent/20 border border-accent/30 text-accent px-3 py-1.5 rounded-lg transition-colors">
                   <Plus size={12} /> Add Coach
                 </button>
               )}
             </div>
           )}
 
-          {/* Add Coach Form */}
           {isAuthenticated && addingCoach && (
             <div className="bg-card border border-accent/30 rounded-2xl p-5 mb-5">
               <p className="text-xs font-semibold text-accent mb-3 uppercase tracking-wider">New Coach</p>
-              <CoachEditForm
-                onSave={handleAddCoach}
-                onCancel={() => setAddingCoach(false)}
-              />
+              <CoachEditForm onSave={handleAddCoach} onCancel={() => setAddingCoach(false)} />
             </div>
           )}
 
@@ -425,26 +362,18 @@ export default function Coaching() {
             {coaches.map((coach, i) => (
               <ScaleIn key={coach.id} delay={i * 0.08}>
                 <div className={`bg-card border rounded-2xl overflow-hidden flex flex-col h-full transition-all duration-200 ${isAuthenticated ? 'border-border/60' : 'border-border hover:border-accent/30 hover:-translate-y-1'}`}>
-
-                  {/* Admin action bar */}
                   {isAuthenticated && (
                     <div className="px-5 pt-4 flex items-center justify-between">
                       <div className={`w-10 h-10 rounded-2xl flex items-center justify-center text-xl font-black bg-accent/10 ${coachColors[i % coachColors.length]}`}>
                         {coach.name.split(' ').slice(-1)[0][0]}
                       </div>
                       <div className="flex gap-1">
-                        <button
-                          onClick={() => { setEditingCoach(coach.id); setAddingCoach(false); setDeletingCoach(null) }}
-                          className="p-1.5 rounded-lg hover:bg-surface text-muted hover:text-text transition-colors"
-                          title="Edit coach"
-                        >
+                        <button onClick={() => { setEditingCoach(coach.id); setAddingCoach(false); setDeletingCoach(null) }}
+                          className="p-1.5 rounded-lg hover:bg-surface text-muted hover:text-text transition-colors" title="Edit coach">
                           <Edit2 size={13} />
                         </button>
-                        <button
-                          onClick={() => setDeletingCoach(coach.id)}
-                          className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors"
-                          title="Delete coach"
-                        >
+                        <button onClick={() => setDeletingCoach(coach.id)}
+                          className="p-1.5 rounded-lg hover:bg-red-500/20 text-muted hover:text-red-400 transition-colors" title="Delete coach">
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -453,11 +382,7 @@ export default function Coaching() {
 
                   {editingCoach === coach.id ? (
                     <div className="p-4 flex-1">
-                      <CoachEditForm
-                        initial={coach}
-                        onSave={handleEditCoach}
-                        onCancel={() => setEditingCoach(null)}
-                      />
+                      <CoachEditForm initial={coach} onSave={handleEditCoach} onCancel={() => setEditingCoach(null)} />
                     </div>
                   ) : (
                     <div className="p-6 flex flex-col gap-5 flex-1">
@@ -466,13 +391,11 @@ export default function Coaching() {
                           {coach.name.split(' ').slice(-1)[0][0]}
                         </div>
                       )}
-
                       <div className="flex-1">
                         <h3 className="font-heading text-base font-bold leading-tight">{coach.name}</h3>
                         <p className={`text-xs font-medium mt-1 ${coachColors[i % coachColors.length]}`}>{coach.specialization}</p>
                         {coach.experience && <p className="text-xs text-muted mt-1">{coach.experience} experience</p>}
                       </div>
-
                       {coach.batches?.length > 0 && (
                         <div>
                           <p className="text-xs text-muted uppercase tracking-wider font-medium mb-2">Batches</p>
@@ -483,7 +406,6 @@ export default function Coaching() {
                           </div>
                         </div>
                       )}
-
                       {coach.schedule?.length > 0 && (
                         <div>
                           <p className="text-xs text-muted uppercase tracking-wider font-medium mb-2">Schedule</p>
@@ -494,35 +416,26 @@ export default function Coaching() {
                           </div>
                         </div>
                       )}
-
                       {coach.phone && (
                         <a href={`tel:${coach.phone}`} className="flex items-center gap-2 text-sm text-accent hover:underline">
-                          <Phone size={14} />
-                          +91 {coach.phone}
+                          <Phone size={14} />+91 {coach.phone}
                         </a>
                       )}
                     </div>
                   )}
 
-                  {/* Delete confirm */}
                   {deletingCoach === coach.id && (
                     <div className="px-4 pb-4">
                       <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 flex items-start gap-2">
                         <AlertTriangle size={13} className="text-red-400 mt-0.5 shrink-0" />
                         <div className="flex-1">
                           <p className="text-xs text-red-300 font-medium">Delete "{coach.name}"?</p>
-                          <p className="text-xs text-muted mt-0.5">Removes them from this page.</p>
                           <div className="flex gap-2 mt-2">
-                            <button
-                              onClick={() => handleDeleteCoach(coach.id)}
-                              className="text-xs bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 px-3 py-1 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => handleDeleteCoach(coach.id)}
+                              className="text-xs bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-300 px-3 py-1 rounded-lg transition-colors">
                               Yes, delete
                             </button>
-                            <button
-                              onClick={() => setDeletingCoach(null)}
-                              className="text-xs text-muted hover:text-text px-2 py-1 rounded-lg transition-colors"
-                            >
+                            <button onClick={() => setDeletingCoach(null)} className="text-xs text-muted hover:text-text px-2 py-1 rounded-lg transition-colors">
                               Cancel
                             </button>
                           </div>

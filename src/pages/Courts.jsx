@@ -1,25 +1,21 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, Info, ChevronDown } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import PageLayout from '../components/layout/PageLayout'
 import Button from '../components/ui/Button'
 import Badge from '../components/ui/Badge'
 import SectionLabel from '../components/ui/SectionLabel'
 import BookingDrawer from '../components/sections/BookingDrawer'
+import { FadeUp, AnimatedTitle } from '../components/ui/ScrollReveal'
 import { courts, availableCount } from '../data/courts'
+import { VOL_1, VOL_2, VOL_3, VOL_4, VOL_5 } from '../assets/images'
 
-const courtImages = [
-  'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=900&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3b?w=900&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=900&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=900&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1566473965997-3de9c817e938?w=900&auto=format&fit=crop&q=80',
-]
+const courtImages = [VOL_1, VOL_2, VOL_3, VOL_4, VOL_5]
 
 export default function Courts() {
-  const [selected, setSelected] = useState(courts[0])
+  const [selected, setSelected]   = useState(courts[0])
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [imgIndex, setImgIndex] = useState(0)
+  const [imgIndex, setImgIndex]   = useState(0)
 
   const handleSelect = (court) => {
     setSelected(court)
@@ -28,11 +24,14 @@ export default function Courts() {
 
   return (
     <PageLayout>
-      <div className="pt-28 pb-20 max-w-7xl mx-auto px-6">
+      <div className="pt-24 sm:pt-28 pb-20 max-w-7xl mx-auto px-4 sm:px-6">
+
         {/* Header */}
-        <div className="text-center space-y-4 mb-16">
+        <FadeUp className="text-center space-y-4 mb-14 sm:mb-16">
           <SectionLabel>11 Indoor Courts</SectionLabel>
-          <h1 className="font-heading text-5xl md:text-6xl font-black">Explore Our Courts</h1>
+          <AnimatedTitle as="h1" className="font-heading text-4xl sm:text-5xl md:text-6xl font-black">
+            Explore Our Courts
+          </AnimatedTitle>
           <p className="text-muted max-w-md mx-auto">
             Professional indoor courts with LED lighting and wooden flooring.
           </p>
@@ -40,7 +39,7 @@ export default function Courts() {
             <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span className="text-accent text-sm font-medium">{availableCount} courts available now</span>
           </div>
-        </div>
+        </FadeUp>
 
         {/* Split-screen layout */}
         <div className="grid lg:grid-cols-2 gap-6 items-start">
@@ -76,63 +75,65 @@ export default function Courts() {
                 <select
                   value={selected.id}
                   onChange={e => handleSelect(courts.find(c => c.id === Number(e.target.value)))}
-                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-text appearance-none focus:outline-none focus:border-accent/50 transition-colors pr-10"
+                  className="w-full bg-surface border border-border rounded-xl px-4 py-3 text-sm text-text focus:outline-none focus:border-accent/50 appearance-none cursor-pointer"
                 >
                   {courts.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} — {c.status.charAt(0).toUpperCase() + c.status.slice(1)}
-                    </option>
+                    <option key={c.id} value={c.id}>{c.name} — {c.status}</option>
                   ))}
                 </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
               </div>
             </div>
 
-            {/* Quick status cards */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-card border border-border rounded-2xl p-4 text-center">
-                <p className="text-xs text-muted mb-1">Status</p>
+            {/* Court details */}
+            <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="font-heading text-xl font-bold">{selected.name}</h2>
+                  <p className="text-sm text-muted mt-0.5">{selected.floor} floor · {selected.lighting} lighting</p>
+                </div>
                 <Badge status={selected.status} />
               </div>
-              <div className="bg-card border border-border rounded-2xl p-4 text-center">
-                <p className="text-xs text-muted mb-1">Next Slot</p>
-                <p className="text-sm font-semibold font-mono-nums">{selected.nextSlot}</p>
-              </div>
-              <div className="bg-card border border-border rounded-2xl p-4 text-center">
-                <p className="text-xs text-muted mb-1">Floor</p>
-                <p className="text-sm font-semibold">{selected.floor}</p>
-              </div>
-            </div>
 
-            {/* Today's Schedule */}
-            <div className="bg-card border border-border rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Clock size={16} className="text-accent" />
-                <h3 className="font-semibold text-sm">Today's Schedule</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: 'Lighting', value: selected.lighting },
+                  { label: 'Floor',    value: selected.floor },
+                  { label: 'Next Slot', value: selected.nextSlot || '—' },
+                  { label: 'Status',   value: selected.status },
+                ].map(({ label, value }) => (
+                  <div key={label} className="bg-surface rounded-xl p-3">
+                    <p className="text-xs text-muted mb-0.5">{label}</p>
+                    <p className="text-sm font-medium capitalize">{value}</p>
+                  </div>
+                ))}
               </div>
-              {selected.schedule.length === 0 ? (
-                <div className="flex items-center gap-2 py-3 text-muted text-sm">
-                  <Info size={14} />
-                  Court is under maintenance. No slots available today.
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {selected.schedule.map((slot, i) => {
-                    const isBooked = slot.includes('Booked')
-                    return (
-                      <div key={i} className={`flex items-center justify-between px-3 py-2 rounded-xl text-sm ${
-                        isBooked ? 'bg-zinc-500/5 border border-zinc-500/10' : 'bg-accent/5 border border-accent/10'
-                      }`}>
-                        <span className={isBooked ? 'text-muted' : 'text-text'}>{slot.split(' (')[0]}</span>
-                        <Badge status={isBooked ? 'booked' : 'available'} />
-                      </div>
-                    )
-                  })}
+
+              {selected.schedule && selected.schedule.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted uppercase tracking-wider font-medium flex items-center gap-1.5 mb-3">
+                    <Clock size={11} /> Today's Schedule
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selected.schedule.map((slot, idx) => {
+                      const isAvailable = slot.toLowerCase().includes('available')
+                      return (
+                        <span
+                          key={idx}
+                          className={`text-xs px-3 py-1.5 rounded-xl border font-medium ${
+                            isAvailable
+                              ? 'bg-accent/10 border-accent/30 text-accent'
+                              : 'bg-surface border-border text-muted line-through'
+                          }`}
+                        >
+                          {slot}
+                        </span>
+                      )
+                    })}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Book button */}
             <Button
               variant="primary"
               size="lg"
@@ -149,8 +150,10 @@ export default function Courts() {
         </div>
 
         {/* All courts grid */}
-        <div className="mt-20">
-          <h2 className="font-heading text-2xl font-bold mb-6">All Courts</h2>
+        <FadeUp className="mt-20">
+          <AnimatedTitle as="h2" className="font-heading text-2xl font-bold mb-6">
+            All Courts
+          </AnimatedTitle>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
             {courts.map(c => (
               <button
@@ -165,7 +168,7 @@ export default function Courts() {
               </button>
             ))}
           </div>
-        </div>
+        </FadeUp>
       </div>
 
       <BookingDrawer

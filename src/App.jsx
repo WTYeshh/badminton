@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
+import { useEffect } from 'react'
 
 // Auth
 import { AdminAuthProvider, useAdminAuth } from './context/AdminAuthContext'
@@ -26,6 +27,15 @@ import AdminAnnouncements from './pages/admin/AdminAnnouncements'
 import AdminCalendar from './pages/admin/AdminCalendar'
 import AdminSettings from './pages/admin/AdminSettings'
 
+// Scroll to top on every route change
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [pathname])
+  return null
+}
+
 // Guard: redirects to login if not authenticated
 function RequireAdminAuth({ children }) {
   const { isAuthenticated } = useAdminAuth()
@@ -39,6 +49,7 @@ function RequireAdminAuth({ children }) {
 export default function App() {
   return (
     <AdminAuthProvider>
+      <ScrollToTop />
       <AnimatePresence mode="wait">
         <Routes>
           {/* Public routes */}

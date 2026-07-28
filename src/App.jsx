@@ -23,6 +23,7 @@ import AdminCourts from './pages/admin/AdminCourts'
 import AdminBookings from './pages/admin/AdminBookings'
 import AdminMembers from './pages/admin/AdminMembers'
 import AdminCoaches from './pages/admin/AdminCoaches'
+import AdminPrograms from './pages/admin/AdminPrograms'
 import AdminAnnouncements from './pages/admin/AdminAnnouncements'
 import AdminCalendar from './pages/admin/AdminCalendar'
 import AdminSettings from './pages/admin/AdminSettings'
@@ -79,6 +80,7 @@ export default function App() {
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="members" element={<AdminMembers />} />
             <Route path="coaches" element={<AdminCoaches />} />
+            <Route path="programs" element={<AdminPrograms />} />
             <Route path="announcements" element={<AdminAnnouncements />} />
             <Route path="calendar" element={<AdminCalendar />} />
             <Route path="settings" element={<AdminSettings />} />

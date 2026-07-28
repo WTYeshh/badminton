@@ -5,8 +5,9 @@ import PageLayout from '../components/layout/PageLayout'
 import SectionLabel from '../components/ui/SectionLabel'
 import Button from '../components/ui/Button'
 import { FadeUp, AnimatedTitle, ScaleIn } from '../components/ui/ScrollReveal'
-import { programs } from '../data/programs'
-import { coaches } from '../data/coaches'
+import { programs as initialPrograms } from '../data/programs'
+import { coaches as initialCoaches } from '../data/coaches'
+import { useLocalData } from '../hooks/useLocalData'
 
 const colorMap = {
   accent: { bg: 'bg-accent/10', text: 'text-accent', border: 'border-accent/20 hover:border-accent/60' },
@@ -21,6 +22,10 @@ const coachColors = ['text-accent', 'text-blue-400', 'text-purple-400', 'text-or
 export default function Coaching() {
   const location = useLocation()
   const teamRef  = useRef(null)
+
+  // Read live data from localStorage (admin changes reflect here immediately)
+  const [programs] = useLocalData('smash_programs', initialPrograms)
+  const [coaches]  = useLocalData('smash_coaches',  initialCoaches)
 
   // If navigated with #meet-the-team hash, scroll down to coaches section
   useEffect(() => {
@@ -53,7 +58,7 @@ export default function Coaching() {
         {/* ── Programs ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 mb-24 sm:mb-28">
           {programs.map((p, i) => {
-            const c = colorMap[p.color]
+            const c = colorMap[p.color] ?? colorMap.accent
             return (
               <ScaleIn key={p.id} delay={i * 0.07}>
                 <div className={`bg-card border rounded-2xl p-6 h-full flex flex-col gap-5 transition-all duration-200 hover:-translate-y-1 ${c.border}`}>
@@ -113,33 +118,39 @@ export default function Coaching() {
                   </div>
 
                   {/* Batches */}
-                  <div>
-                    <p className="text-xs text-muted uppercase tracking-wider font-medium mb-2">Batches</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {coach.batches.map(b => (
-                        <span key={b} className="text-xs bg-surface border border-border rounded-lg px-2 py-0.5">{b}</span>
-                      ))}
+                  {coach.batches?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted uppercase tracking-wider font-medium mb-2">Batches</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {coach.batches.map(b => (
+                          <span key={b} className="text-xs bg-surface border border-border rounded-lg px-2 py-0.5">{b}</span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Schedule */}
-                  <div>
-                    <p className="text-xs text-muted uppercase tracking-wider font-medium mb-2">Schedule</p>
-                    <div className="space-y-1">
-                      {coach.schedule.map(s => (
-                        <p key={s} className="text-xs text-muted">{s}</p>
-                      ))}
+                  {coach.schedule?.length > 0 && (
+                    <div>
+                      <p className="text-xs text-muted uppercase tracking-wider font-medium mb-2">Schedule</p>
+                      <div className="space-y-1">
+                        {coach.schedule.map(s => (
+                          <p key={s} className="text-xs text-muted">{s}</p>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Contact */}
-                  <a
-                    href={`tel:${coach.phone}`}
-                    className="flex items-center gap-2 text-sm text-accent hover:underline"
-                  >
-                    <Phone size={14} />
-                    +91 {coach.phone}
-                  </a>
+                  {coach.phone && (
+                    <a
+                      href={`tel:${coach.phone}`}
+                      className="flex items-center gap-2 text-sm text-accent hover:underline"
+                    >
+                      <Phone size={14} />
+                      +91 {coach.phone}
+                    </a>
+                  )}
                 </div>
               </ScaleIn>
             ))}

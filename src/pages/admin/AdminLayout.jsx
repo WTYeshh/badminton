@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Building2, CalendarCheck, Users, UserRound,
-  Megaphone, Calendar, Settings, Menu, X, ChevronRight, LogOut, ShieldOff
+  Megaphone, Calendar, Settings, Menu, X, ChevronRight, LogOut, ShieldOff, Layers
 } from 'lucide-react'
 import Logo from '../../components/ui/Logo'
 import { useAdminAuth } from '../../context/AdminAuthContext'
@@ -13,6 +13,7 @@ const navItems = [
   { label: 'Bookings', to: '/admin/bookings', icon: CalendarCheck },
   { label: 'Members', to: '/admin/members', icon: Users },
   { label: 'Coaches', to: '/admin/coaches', icon: UserRound },
+  { label: 'Programs', to: '/admin/programs', icon: Layers },
   { label: 'Announcements', to: '/admin/announcements', icon: Megaphone },
   { label: 'Calendar', to: '/admin/calendar', icon: Calendar },
   { label: 'Settings', to: '/admin/settings', icon: Settings },
